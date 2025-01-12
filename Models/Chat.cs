@@ -10,8 +10,9 @@ public class Chat
     public int UsersID { get; set; } //ustvaril
     public string Status { get; set; }
     public DateTime CreatedAt { get; set; }
+    public bool isGroupchat { get; set; }
 
     public ICollection<Message> Messages { get; set; }
-    public ICollection<Participant> Participants { get; set; }
+    public ICollection<User> Users { get; set; }
 }
 

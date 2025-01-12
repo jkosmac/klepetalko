@@ -1,0 +1,46 @@
+@model IEnumerable<klepetalko.Models.Chat>
+
+@{
+    ViewData["Title"] = "My Chats";
+}
+
+<h2>Klepetalkoti</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Naslov</th>
+            <th>Ustvarjen</th>
+            <th>Akcije</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var chat in Model)
+        {
+
+            var currentUserId = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            var otherUser = chat.Users.FirstOrDefault(u => u.Id != currentUserId);
+            //Console.WriteLine(otherUser?.Id);
+            
+            <tr>
+                <td>@chat.Title</td>
+                <td>@chat.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <a class="btn btn-primary" asp-action="Chat" asp-route-chatId="@chat.Id">Odpri</a>
+                        <form asp-action="AddFriend" asp-controller="Friendship" method="post" class="d-inline ms-2">
+                            <input type="hidden" name="friendUsername" value="@otherUser?.UserName" />
+                            <button type="submit" class="btn btn-success">Dodaj</button>
+                        </form>
+                        <form asp-action="RemoveUser" asp-controller="Friendship" method="post" class="d-inline ms-2">
+                            <input type="hidden" name="userIdToRemove" value="@otherUser?.Id" />
+                            <button type="submit" class="btn btn-danger">Odstrani</button>
+                        </form>
+                </td>
+            </tr>
+        }
+
+
+
+    </tbody>
+</table>

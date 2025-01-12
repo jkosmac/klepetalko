@@ -14,7 +14,7 @@ namespace klepetalko.Data
         public DbSet<Message> Messages { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
-        public DbSet<Participant> Participants { get; set; }
+        public DbSet<Setting> Settings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,7 +23,22 @@ namespace klepetalko.Data
             modelBuilder.Entity<Message>().ToTable("Messages");
             modelBuilder.Entity<User>().ToTable("Users");
             modelBuilder.Entity<Friendship>().ToTable("Friendships");
-            modelBuilder.Entity<Participant>().ToTable("Participants");
+            modelBuilder.Entity<Setting>().ToTable("Settings");
+
+            modelBuilder.Entity<Friendship>()
+                .HasOne(f => f.Friend)
+                .WithMany()
+                .HasForeignKey(f => f.FriendId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Chat>()
+                .HasMany(c => c.Users)
+                .WithMany(u => u.Chats);
+
+            modelBuilder.Entity<Setting>()
+                .HasOne(s => s.Userski)
+                .WithOne(u => u.Setting)
+                .HasForeignKey<Setting>(s => s.UserId);
         }
         
     }

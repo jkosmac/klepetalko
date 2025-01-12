@@ -1,0 +1,72 @@
+@model klepetalko.Models.Chat
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<h2>
+    <span id="chatTitle">@Model.Title</span>
+    <button id="editTitleBtn" class="btn">
+        <span class="crni" style="
+            display: inline-block; 
+            font-size: 30px;
+            -webkit-transform: matrix(-1, 0, 0, 1, 0, 0);
+            -moz-transform: matrix(-1, 0, 0, 1, 0, 0);
+            -o-transform: matrix(-1, 0, 0, 1, 0, 0);
+            transform: matrix(-1, 0, 0, 1, 0, 0);">✎</span>
+    </button>
+</h2>
+
+<form id="editTitleForm" asp-action="EditChatTitle" asp-controller="Message" method="post" class="d-none">
+    <input type="hidden" name="chatId" value="@Model.Id" />
+    <input type="text" name="newTitle" class="form-control d-inline-block w-50" value="@Model.Title" required />
+    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+    <button type="button" id="cancelEditBtn" class="btn btn-secondary btn-sm">Cancel</button>
+</form>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Message"]
+    </div>
+}
+
+<div class="messages mb-4">
+    <h4>Messages</h4>
+    <ul class="list-group">
+        @foreach (var message in Model.Messages.OrderBy(m => m.TimeCreated))
+        {
+            <li class="list-group-item">
+                <strong>@message.Sender.UserName:</strong> @message.Text
+                <br />
+                <small class="text-muted">@message.TimeCreated.ToString("dd/MM/yyyy HH:mm")</small>
+            </li>
+        }
+    </ul>
+</div>
+
+<div class="mt-4">
+    <h4>Send a Message</h4>
+    <form asp-action="SendMessage" asp-controller="Message" method="post">
+        <input type="hidden" name="chatId" value="@Model.Id" />
+        <div class="mb-3">
+            <label for="messageText" class="form-label">Message</label>
+            <textarea class="form-control" id="messageText" name="messageText" rows="3" placeholder="Type your message..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Send</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('editTitleBtn').addEventListener('click', function() {
+        document.getElementById('chatTitle').classList.add('d-none');
+        this.classList.add('d-none');
+        document.getElementById('editTitleForm').classList.remove('d-none');
+    });
+
+    document.getElementById('cancelEditBtn').addEventListener('click', function() {
+        document.getElementById('chatTitle').classList.remove('d-none');
+        document.getElementById('editTitleBtn').classList.remove('d-none');
+        document.getElementById('editTitleForm').classList.add('d-none');
+    });
+</script>

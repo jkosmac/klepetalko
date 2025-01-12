@@ -20,3 +20,52 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+body.dark-mode {
+  background-color: rgb(45, 45, 45);
+  color: white;
+}
+
+.dark-mode .navbar {
+  background-color: black !important;
+  border-color: black;
+}
+
+.dark-mode .navbar a.nav-link {
+  color: white !important;
+}
+
+.dark-mode .navbar-brand {
+  color: white !important;
+}
+
+.dark-mode .navbar-toggler {
+  background-color: white;
+}
+
+.dark-mode table {
+  background-color: black !important;
+  color: white !important;
+}
+
+.dark-mode .table-striped tbody tr:nth-child(odd) {
+  background-color: #333 !important;
+}
+
+.dark-mode .table-striped tbody tr:nth-child(even) {
+  background-color: #444 !important;
+}
+
+.dark-mode .table thead {
+  background-color: #222 !important;
+  color: white !important;
+}
+
+.dark-mode .table td, .dark-mode .table th {
+  border-color: #555 !important;
+  color: white
+}
+
+.dark-mode .crni {
+  color: white;
+}

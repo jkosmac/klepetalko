@@ -8,5 +8,6 @@ public class Friendship
     public int Id { get; set; }
     public DateTime FriendshipTime { get; set; }
 
+    public string FriendId { get; set; }
     public User Friend { get; set; }
 }

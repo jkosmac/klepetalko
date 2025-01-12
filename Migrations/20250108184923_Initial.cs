@@ -34,7 +34,8 @@ namespace klepetalko.Migrations
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UsersID = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    isGroupchat = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -176,13 +177,38 @@ namespace klepetalko.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ChatUser",
+                columns: table => new
+                {
+                    ChatsId = table.Column<int>(type: "int", nullable: false),
+                    UsersId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChatUser", x => new { x.ChatsId, x.UsersId });
+                    table.ForeignKey(
+                        name: "FK_ChatUser_Chats_ChatsId",
+                        column: x => x.ChatsId,
+                        principalTable: "Chats",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChatUser_Users_UsersId",
+                        column: x => x.UsersId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Friendships",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FriendshipTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FriendId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    FriendId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -192,7 +218,12 @@ namespace klepetalko.Migrations
                         column: x => x.FriendId,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Friendships_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -204,7 +235,7 @@ namespace klepetalko.Migrations
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Attachment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TimeCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    SenderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    SenderId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     ChatId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -220,34 +251,26 @@ namespace klepetalko.Migrations
                         name: "FK_Messages_Users_SenderId",
                         column: x => x.SenderId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "Participants",
+                name: "Settings",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ChatId = table.Column<int>(type: "int", nullable: false)
+                    darkMode = table.Column<bool>(type: "bit", nullable: false),
+                    UserskiId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Participants", x => x.Id);
+                    table.PrimaryKey("PK_Settings", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Participants_Chats_ChatId",
-                        column: x => x.ChatId,
-                        principalTable: "Chats",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Participants_Users_UserId",
-                        column: x => x.UserId,
+                        name: "FK_Settings_Users_UserskiId",
+                        column: x => x.UserskiId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -278,9 +301,19 @@ namespace klepetalko.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ChatUser_UsersId",
+                table: "ChatUser",
+                column: "UsersId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Friendships_FriendId",
                 table: "Friendships",
                 column: "FriendId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Friendships_UserId",
+                table: "Friendships",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_ChatId",
@@ -293,14 +326,9 @@ namespace klepetalko.Migrations
                 column: "SenderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Participants_ChatId",
-                table: "Participants",
-                column: "ChatId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Participants_UserId",
-                table: "Participants",
-                column: "UserId");
+                name: "IX_Settings_UserskiId",
+                table: "Settings",
+                column: "UserskiId");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
@@ -334,13 +362,16 @@ namespace klepetalko.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "ChatUser");
+
+            migrationBuilder.DropTable(
                 name: "Friendships");
 
             migrationBuilder.DropTable(
                 name: "Messages");
 
             migrationBuilder.DropTable(
-                name: "Participants");
+                name: "Settings");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

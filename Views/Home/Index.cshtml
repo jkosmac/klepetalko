@@ -1,7 +1,26 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@using klepetalko.Models
+
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">KLEPETALKO</h1>
+
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 60vh;">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <div class="text-center">
+            <h1 class="display-4">Pozdravljen @UserManager.GetUserName(User)!</h1>
+            <span>Pridruži se in preprosto komuniciraj, deli ideje in se povezuješ s prijatelji!</span>
+        </div>
+    }
+    else
+    {
+        <div class="text-center">
+            <h1 class="display-4" style="padding-top:50px;">Prosim registriraj se za uporabo klepetalkota :D</h1>
+        </div>
+    }
 </div>

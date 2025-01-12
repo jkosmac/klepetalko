@@ -5,9 +5,8 @@ using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("klepet");
+var connectionString = builder.Configuration.GetConnectionString("AzureContext");
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<klepet>(options =>
             options.UseSqlServer(connectionString));
@@ -20,18 +19,14 @@ builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfi
 
 var app = builder.Build();
 
-// Seed database using DbInitializer 
 using(var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<klepet>();
-    //DbInitializer.Initialize(context);
 }
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -47,5 +42,10 @@ app.MapRazorPages();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapAreaControllerRoute(
+    name: "settings",
+    areaName: "settings",
+    pattern: "{controller=Settings}/{action=settings}/{id?}");
 
 app.Run();

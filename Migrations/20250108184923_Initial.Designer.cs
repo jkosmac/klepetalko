@@ -12,7 +12,7 @@ using klepetalko.Data;
 namespace klepetalko.Migrations
 {
     [DbContext(typeof(klepet))]
-    [Migration("20241204155217_Initial")]
+    [Migration("20250108184923_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -24,6 +24,21 @@ namespace klepetalko.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("ChatUser", b =>
+                {
+                    b.Property<int>("ChatsId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UsersId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ChatsId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("ChatUser");
+                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -184,6 +199,9 @@ namespace klepetalko.Migrations
                     b.Property<int>("UsersID")
                         .HasColumnType("int");
 
+                    b.Property<bool>("isGroupchat")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.ToTable("Chats", (string)null);
@@ -204,9 +222,14 @@ namespace klepetalko.Migrations
                     b.Property<DateTime>("FriendshipTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("FriendId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Friendships", (string)null);
                 });
@@ -226,7 +249,6 @@ namespace klepetalko.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("SenderId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Text")
@@ -245,7 +267,7 @@ namespace klepetalko.Migrations
                     b.ToTable("Messages", (string)null);
                 });
 
-            modelBuilder.Entity("klepetalko.Models.Participant", b =>
+            modelBuilder.Entity("klepetalko.Models.Setting", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -253,20 +275,17 @@ namespace klepetalko.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ChatId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
+                    b.Property<string>("UserskiId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("darkMode")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChatId");
+                    b.HasIndex("UserskiId");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Participants", (string)null);
+                    b.ToTable("Settings", (string)null);
                 });
 
             modelBuilder.Entity("klepetalko.Models.User", b =>
@@ -343,6 +362,21 @@ namespace klepetalko.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
+            modelBuilder.Entity("ChatUser", b =>
+                {
+                    b.HasOne("klepetalko.Models.Chat", null)
+                        .WithMany()
+                        .HasForeignKey("ChatsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("klepetalko.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -397,10 +431,14 @@ namespace klepetalko.Migrations
             modelBuilder.Entity("klepetalko.Models.Friendship", b =>
                 {
                     b.HasOne("klepetalko.Models.User", "Friend")
-                        .WithMany("Friendships")
+                        .WithMany()
                         .HasForeignKey("FriendId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("klepetalko.Models.User", null)
+                        .WithMany("Friendships")
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Friend");
                 });
@@ -415,39 +453,25 @@ namespace klepetalko.Migrations
 
                     b.HasOne("klepetalko.Models.User", "Sender")
                         .WithMany("Messages")
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SenderId");
 
                     b.Navigation("Chat");
 
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("klepetalko.Models.Participant", b =>
+            modelBuilder.Entity("klepetalko.Models.Setting", b =>
                 {
-                    b.HasOne("klepetalko.Models.Chat", "Chat")
-                        .WithMany("Participants")
-                        .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("klepetalko.Models.User", "Userski")
+                        .WithMany()
+                        .HasForeignKey("UserskiId");
 
-                    b.HasOne("klepetalko.Models.User", "User")
-                        .WithMany("Participants")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Chat");
-
-                    b.Navigation("User");
+                    b.Navigation("Userski");
                 });
 
             modelBuilder.Entity("klepetalko.Models.Chat", b =>
                 {
                     b.Navigation("Messages");
-
-                    b.Navigation("Participants");
                 });
 
             modelBuilder.Entity("klepetalko.Models.User", b =>
@@ -455,8 +479,6 @@ namespace klepetalko.Migrations
                     b.Navigation("Friendships");
 
                     b.Navigation("Messages");
-
-                    b.Navigation("Participants");
                 });
 #pragma warning restore 612, 618
         }

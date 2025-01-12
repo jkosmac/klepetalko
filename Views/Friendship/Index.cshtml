@@ -1,0 +1,47 @@
+@model IEnumerable<klepetalko.Models.Friendship>
+
+@{
+    ViewData["Title"] = "My Friends";
+}
+
+<div>
+    <h4>Add a Friend</h4>
+    <form asp-action="AddFriend" asp-controller="Friendship" method="post">
+        <div class="mb-3">
+            <label for="friendUsername" class="form-label">Friend's Username</label>
+            <input type="text" class="form-control" id="friendUsername" name="friendUsername" placeholder="Enter username" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Friend</button>
+    </form>
+</div>
+
+<h2 class="mt-5">My Friends</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Friend's Username</th>
+            <th>Friendship Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var friendship in Model)
+        {
+            <tr>
+                <td>@friendship.Friend.UserName</td>
+                <td>@friendship.FriendshipTime.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <form asp-action="StartChat" asp-controller="Message" method="post" style="display:inline;">
+                    <input type="hidden" name="friendId" value="@friendship.Friend.Id" />
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
