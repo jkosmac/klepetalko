@@ -31,6 +31,7 @@ public class FriendshipController : Controller
     {
         var currentUser = await _context.Users
             .Include(u => u.Friendships)
+            .ThenInclude(f => f.Friend)
             .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
 
         var friend = await _context.Users
@@ -41,7 +42,7 @@ public class FriendshipController : Controller
             return NotFound("User not found.");
         }
 
-        if (currentUser.Friendships.Any(f => f.Friend.UserName == friendUsername))
+        if (currentUser.Friendships == null || currentUser.Friendships.Any(f => f.Friend.UserName == friendUsername))
         {
             return RedirectToAction("Index");
         }

@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//var connectionString = builder.Configuration.GetConnectionString("klepet");
+var connectionString = builder.Configuration.GetConnectionString("klepet");
 
-var connectionString = builder.Configuration.GetConnectionString("AzureContext");
+//var connectionString = builder.Configuration.GetConnectionString("AzureContext");
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<klepet>(options =>
