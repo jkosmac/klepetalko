@@ -48,7 +48,7 @@ else
                 navbar.classList.toggle('dark-mode');
                 tables.forEach(table => table.classList.add('dark-mode'));
 
-                toggleButton.textContent = "Light Mode";
+                toggleButton.textContent = "Svetli Način";
             }
         });
 
@@ -64,10 +64,10 @@ else
         .then(data => {
             if (data.darkMode) {
                 body.classList.add("dark-mode");
-                toggleButton.textContent = "Light Mode";
+                toggleButton.textContent = "Svetli Način";
             } else {
                 body.classList.remove("dark-mode");
-                toggleButton.textContent = "Dark Mode";
+                toggleButton.textContent = "Temni Način";
             }
         });
     });
