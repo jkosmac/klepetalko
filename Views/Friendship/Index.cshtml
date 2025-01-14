@@ -5,24 +5,23 @@
 }
 
 <div>
-    <h4>Add a Friend</h4>
+    <h4>Dodaj Prijatelja</h4>
     <form asp-action="AddFriend" asp-controller="Friendship" method="post">
         <div class="mb-3">
-            <label for="friendUsername" class="form-label">Friend's Username</label>
-            <input type="text" class="form-control" id="friendUsername" name="friendUsername" placeholder="Enter username" required>
+            <input type="text" class="form-control" id="friendUsername" name="friendUsername" placeholder="Vnesi uporabniško ime" required>
         </div>
-        <button type="submit" class="btn btn-primary">Add Friend</button>
+        <button type="submit" class="btn btn-primary">Dodaj</button>
     </form>
 </div>
 
-<h2 class="mt-5">My Friends</h2>
+<h2 class="mt-5">Moji Prijatelji</h2>
 
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Friend's Username</th>
-            <th>Friendship Date</th>
-            <th>Actions</th>
+            <th>Uporabniško Ime</th>
+            <th>Datum</th>
+            <th>Akcije</th>
         </tr>
     </thead>
     <tbody>
@@ -34,7 +33,7 @@
                 <td>
                     <form asp-action="StartChat" asp-controller="Message" method="post" style="display:inline;">
                     <input type="hidden" name="friendId" value="@friendship.Friend.Id" />
-                    <button type="submit" class="btn btn-primary">Send Message</button>
+                    <button type="submit" class="btn btn-primary">Pošlji Sporočilo</button>
                 </form>
 
                 </td>
