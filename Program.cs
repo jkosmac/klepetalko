@@ -2,10 +2,13 @@ using klepetalko.Data;
 using klepetalko.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("AzureContext");
+var connectionString = builder.Configuration.GetConnectionString("klepet");
+
+//var connectionString = builder.Configuration.GetConnectionString("AzureContext");
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<klepet>(options =>
@@ -15,7 +18,7 @@ builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfi
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<klepet>();
 
-
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
@@ -36,6 +39,11 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.UseSwagger();
+app.UseSwaggerUI(c=>{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+});
 
 app.MapRazorPages();
 
