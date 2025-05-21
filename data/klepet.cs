@@ -39,6 +39,17 @@ namespace klepetalko.Data
                 .HasOne(s => s.Userski)
                 .WithOne(u => u.Setting)
                 .HasForeignKey<Setting>(s => s.UserId);
+
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Sender)
+                .WithMany(u => u.Messages)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Message>()
+                .HasMany(m => m.ReadBy)
+                .WithMany(u => u.ReadMessages)
+                .UsingEntity(j => j.ToTable("MessageReads"));
+
         }
         
     }

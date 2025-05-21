@@ -30,9 +30,15 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Friendship" asp-action="Index">Prijatelji</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Message" asp-action="ChatList">Klepeti</a>
+                            <li class="nav-item position-relative">
+                                <a id="klepetLink" class="nav-link text-dark" asp-area="" asp-controller="Message" asp-action="ChatList">
+                                    Klepeti
+                                    <span id="notificationDot" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle d-none">
+                                        <span class="visually-hidden">New messages</span>
+                                    </span>
+                                </a>
                             </li>
+
 
                         }
                     </ul>
@@ -56,5 +62,17 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    
+    <script>
+        async function checkUnreadMessages() {
+            const res = await fetch('/Home/HasUnreadMessages');
+            const hasUnread = await res.json();
+            document.getElementById('notificationDot').classList.toggle('d-none', !hasUnread);
+        }
+
+        checkUnreadMessages();
+        setInterval(checkUnreadMessages, 10000); // Check every 10 seconds
+    </script>
+
 </body>
 </html>
