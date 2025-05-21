@@ -17,41 +17,77 @@ public class MessageController : Controller
     }
 
     public async Task<IActionResult> ChatList()
-{
-    var currentUser = await _context.Users
-        .Include(u => u.Chats)
-        .ThenInclude(c => c.Users)
-        .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-
-    if (currentUser == null)
     {
-        return Unauthorized();
+        var currentUser = await _context.Users
+            .Include(u => u.Chats)
+                .ThenInclude(c => c.Users)
+            .Include(u => u.Chats)
+                .ThenInclude(c => c.Messages)
+                    .ThenInclude(m => m.ReadBy)
+            .Include(u => u.Friendships)
+                .ThenInclude(f => f.Friend)
+            .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+
+        if (currentUser == null)
+        {
+            return Unauthorized();
+        }
+
+        var userChats = currentUser.Chats
+            .OrderByDescending(c => c.CreatedAt)
+            .ToList();
+
+        var unreadChatIds = userChats
+            .Where(c => c.Messages.Any(m => !m.ReadBy.Any(u => u.Id == currentUser.Id)))
+            .Select(c => c.Id)
+            .ToHashSet();
+
+        ViewBag.UnreadChatIds = unreadChatIds;
+        ViewBag.Friends = currentUser.Friendships.Select(f => f.Friend).ToList();
+
+        return View(userChats);
     }
 
-    var userChats = currentUser.Chats.ToList();
-    return View(userChats);
-}
+
 
 
     public async Task<IActionResult> Chat(int chatId)
     {
+        var currentUser = await _context.Users
+            .Include(u => u.ReadMessages)
+            .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+
+        if (currentUser == null) return Unauthorized();
+
         var chat = await _context.Chats
+            .Include(c => c.Users)
             .Include(c => c.Messages)
-            .ThenInclude(m => m.Sender)
+                .ThenInclude(m => m.Sender)
             .FirstOrDefaultAsync(c => c.Id == chatId);
 
-        if (chat == null)
+        if (chat == null) return NotFound("Chat not found.");
+
+        foreach (var msg in chat.Messages)
         {
-            return NotFound("Chat not found.");
+            if (!msg.ReadBy.Any(u => u.Id == currentUser.Id))
+            {
+                msg.ReadBy.Add(currentUser);
+            }
         }
+
+        await _context.SaveChangesAsync();
 
         return View(chat);
     }
+
+
 
     [HttpPost]
     public async Task<IActionResult> StartChat(string friendId)
     {
         var currentUser = await _context.Users
+            .Include(u => u.Chats)
+                .ThenInclude(c => c.Users)
             .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
 
         if (currentUser == null)
@@ -60,6 +96,7 @@ public class MessageController : Controller
         }
 
         var friend = await _context.Users
+            .Include(u => u.Chats)
             .FirstOrDefaultAsync(u => u.Id == friendId);
 
         if (friend == null)
@@ -67,28 +104,32 @@ public class MessageController : Controller
             return NotFound("Friend not found.");
         }
 
-        var existingChat = await _context.Chats
+        var oneOnOneChat = await _context.Chats
             .Include(c => c.Users)
-            .FirstOrDefaultAsync(c => c.Users.Any(u => u.Id == currentUser.Id) && c.Users.Any(u => u.Id == friend.Id));
+            .Where(c => !c.isGroupchat &&
+                        c.Users.Count == 2 &&
+                        c.Users.Any(u => u.Id == currentUser.Id) &&
+                        c.Users.Any(u => u.Id == friend.Id))
+            .FirstOrDefaultAsync();
 
-        if (existingChat == null)
+        if (oneOnOneChat != null)
         {
-            var chat = new Chat
-            {
-                Title = $"{currentUser.UserName} & {friend.UserName}",
-                CreatedAt = DateTime.Now,
-                isGroupchat = false,
-                Status = "Active",
-                Users = new List<User> { currentUser, friend }
-            };
-
-            _context.Chats.Add(chat);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction("Chat", new { chatId = chat.Id });
+            return RedirectToAction("Chat", new { chatId = oneOnOneChat.Id });
         }
 
-        return RedirectToAction("Chat", new { chatId = existingChat.Id });
+        var newChat = new Chat
+        {
+            Title = $"{currentUser.UserName} & {friend.UserName}",
+            CreatedAt = DateTime.Now,
+            isGroupchat = false,
+            Status = "Active",
+            Users = new List<User> { currentUser, friend }
+        };
+
+        _context.Chats.Add(newChat);
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction("Chat", new { chatId = newChat.Id });
     }
 
     [HttpPost]
@@ -139,5 +180,42 @@ public class MessageController : Controller
         TempData["Message"] = $"Naslov klepetalkota spremenjen na \"{newTitle}\"";
         return RedirectToAction("Chat", new { chatId });
     }
+
+    [HttpPost]
+    public async Task<IActionResult> AddUserToChat(int chatId, string userIdToAdd)
+    {
+        var currentUser = await _context.Users
+            .Include(u => u.Chats)
+            .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+
+        if (currentUser == null)
+        {
+            return Unauthorized();
+        }
+
+        var chat = await _context.Chats
+            .Include(c => c.Users)
+            .FirstOrDefaultAsync(c => c.Id == chatId);
+
+        if (chat == null || !chat.Users.Contains(currentUser))
+        {
+            return NotFound("Chat not found or unauthorized.");
+        }
+
+        var userToAdd = await _context.Users.FindAsync(userIdToAdd);
+
+        if (userToAdd == null || chat.Users.Contains(userToAdd))
+        {
+            return BadRequest("User already in chat or invalid.");
+        }
+
+        chat.Users.Add(userToAdd);
+        chat.isGroupchat = true;
+
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction("Chat", new { chatId = chat.Id });
+    }
+
 
 }

@@ -24,6 +24,17 @@
     <button type="button" id="cancelEditBtn" class="btn btn-secondary btn-sm">Cancel</button>
 </form>
 
+@if (Model.Users != null && Model.Users.Any())
+{
+    <p class="text-muted ms-1">
+        <strong>Udeleženci:</strong>
+        @string.Join(", ", Model.Users.Select(u => u.UserName))
+    </p>
+}
+
+
+
+
 @if (TempData["Message"] != null)
 {
     <div class="alert alert-success">

@@ -9,6 +9,7 @@ public class Message
     public string? Attachment { get; set; }
     public DateTime TimeCreated { get; set; }
 
+    public ICollection<User> ReadBy { get; set; } = new List<User>();
     public User Sender { get; set; }
     public Chat Chat { get; set; }
 }

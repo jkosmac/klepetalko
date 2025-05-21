@@ -37,6 +37,21 @@ namespace klepetalko.Migrations
                     b.ToTable("ChatUser");
                 });
 
+            modelBuilder.Entity("MessageUser", b =>
+                {
+                    b.Property<string>("ReadById")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("ReadMessagesId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ReadById", "ReadMessagesId");
+
+                    b.HasIndex("ReadMessagesId");
+
+                    b.ToTable("MessageReads", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -246,6 +261,7 @@ namespace klepetalko.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("SenderId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Text")
@@ -376,6 +392,21 @@ namespace klepetalko.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MessageUser", b =>
+                {
+                    b.HasOne("klepetalko.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("ReadById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("klepetalko.Models.Message", null)
+                        .WithMany()
+                        .HasForeignKey("ReadMessagesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -452,7 +483,9 @@ namespace klepetalko.Migrations
 
                     b.HasOne("klepetalko.Models.User", "Sender")
                         .WithMany("Messages")
-                        .HasForeignKey("SenderId");
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Chat");
 

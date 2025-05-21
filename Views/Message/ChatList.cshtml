@@ -1,10 +1,25 @@
 @model IEnumerable<klepetalko.Models.Chat>
 
 @{
+    var chatData = Model.Select(c => new { id = c.Id, title = c.Title }).ToList();
+    var chatJson = System.Text.Json.JsonSerializer.Serialize(chatData);
+}
+<script>
+    const allChats = @Html.Raw(chatJson);
+</script>
+
+
+@{
     ViewData["Title"] = "My Chats";
 }
 
 <h2>Klepetalkoti</h2>
+
+<div class="mb-3 position-relative">
+    <input type="text" id="chatSearchInput" class="form-control" placeholder="Išči klepete..." autocomplete="off">
+    <ul id="searchDropdown" class="list-group position-absolute w-100 d-none" style="z-index: 1000;"></ul>
+</div>
+
 
 <table class="table table-striped">
     <thead>
@@ -23,7 +38,13 @@
             var otherUser = chat.Users.FirstOrDefault(u => u.Id != currentUserId);
             //Console.WriteLine(otherUser?.Id);
             
-            <tr>
+            
+            var isUnread = ((HashSet<int>)ViewBag.UnreadChatIds).Contains(chat.Id);
+            var rowClass = isUnread ? "table-warning fw-bold" : "";
+            
+
+            <tr class="@rowClass">
+
                 <td>@chat.Title</td>
                 <td>@chat.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
                 <td>
@@ -36,6 +57,7 @@
                             <input type="hidden" name="userIdToRemove" value="@otherUser?.Id" />
                             <button type="submit" class="btn btn-danger">Odstrani</button>
                         </form>
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addUserModal" data-chatid="@chat.Id">+</button>
                 </td>
             </tr>
         }
@@ -44,3 +66,82 @@
 
     </tbody>
 </table>
+
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addUserModalLabel">Dodaj prijatelja v klepet</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zapri"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addUserForm" method="post">
+            <input type="hidden" name="chatId" id="chatIdInput" />
+            <div class="list-group">
+                @foreach (var friend in ViewBag.Friends as List<User>)
+                {
+                    <button type="submit" formaction="/Message/AddUserToChat?userIdToAdd=@friend.Id" formmethod="post" class="list-group-item list-group-item-action">
+                        @friend.UserName
+                    </button>
+                }
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+    const modal = document.getElementById('addUserModal');
+    modal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const chatId = button.getAttribute('data-chatid');
+        document.getElementById('chatIdInput').value = chatId;
+    });
+</script>
+
+<script>
+    const input = document.getElementById("chatSearchInput");
+    const dropdown = document.getElementById("searchDropdown");
+
+    input.addEventListener("input", function () {
+        const query = this.value.toLowerCase();
+        dropdown.innerHTML = "";
+
+        if (!query) {
+            dropdown.classList.add("d-none");
+            return;
+        }
+
+        const filtered = allChats.filter(chat =>
+            chat.title.toLowerCase().includes(query)
+        );
+
+        if (filtered.length === 0) {
+            dropdown.classList.add("d-none");
+            return;
+        }
+
+        filtered.forEach(chat => {
+            const li = document.createElement("li");
+            li.className = "list-group-item list-group-item-action";
+            li.textContent = chat.title;
+            li.style.cursor = "pointer";
+            li.addEventListener("click", () => {
+                window.location.href = `/Message/Chat?chatId=${chat.id}`;
+            });
+            dropdown.appendChild(li);
+        });
+
+        dropdown.classList.remove("d-none");
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add("d-none");
+        }
+    });
+</script>
+
+}

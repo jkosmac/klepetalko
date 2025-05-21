@@ -13,6 +13,8 @@ public class User : IdentityUser
     public ICollection<Chat> Chats { get; set; }
     public ICollection<Message> Messages { get; set; }
     public Setting? Setting { get; set; }
+    public ICollection<Message> ReadMessages { get; set; } = new List<Message>();
+
 }
 
     

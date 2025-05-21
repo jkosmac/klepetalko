@@ -17,14 +17,14 @@ public class FriendshipController : Controller
     }
 
     public async Task<IActionResult> Index()
-{
+    {
     var currentUser = await _context.Users
         .Include(u => u.Friendships)
         .ThenInclude(f => f.Friend)
         .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
 
     return View(currentUser.Friendships);
-}
+    }
 
     [HttpPost]
     public async Task<IActionResult> AddFriend(string friendUsername)
@@ -64,6 +64,7 @@ public class FriendshipController : Controller
     {
         var currentUser = await _context.Users
             .Include(u => u.Friendships)
+                .ThenInclude(f => f.Friend)
             .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
 
         var userToBlock = await _context.Users
@@ -74,7 +75,9 @@ public class FriendshipController : Controller
             return NotFound("User not found.");
         }
 
-        var friendship = currentUser.Friendships.FirstOrDefault(f => f.Friend.Id == userToBlock.Id);
+        var friendship = currentUser.Friendships
+            .FirstOrDefault(f => f.Friend.Id == userToBlock.Id);
+
         if (friendship != null)
         {
             _context.Friendships.Remove(friendship);
